@@ -1,0 +1,14 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0.28
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - .docker/db/data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d
+    container_name: banking-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1qazxsw2
+      MYSQL_DATABASE: banking
+      TZ: Asia/Tokyo

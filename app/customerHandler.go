@@ -15,19 +15,11 @@ type Customer struct {
 	Zipcode string `json:"zip_code" xml:"zip_code"`
 }
 
-func greet(w http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(w, "hello world")
-}
-
 type CustomerHandlers struct {
 	service service.CustomerService
 }
 
-func (customerHandlers *CustomerHandlers) greetCustomers(w http.ResponseWriter, r *http.Request) {
-	//customers := []Customer{
-	//	{"mike", "tokyo", "103-0027"},
-	//	{"popcorn", "tokyo", "104-0061"},
-	//}
+func (customerHandlers *CustomerHandlers) getCustomers(w http.ResponseWriter, r *http.Request) {
 	customers, _ := customerHandlers.service.GetAllCustomer()
 
 	if r.Header.Get("Content-Type") == "application/xml" {
@@ -39,16 +31,14 @@ func (customerHandlers *CustomerHandlers) greetCustomers(w http.ResponseWriter, 
 	}
 }
 
-func (customerHandlers *CustomerHandlers) greetCustomer(w http.ResponseWriter, r *http.Request) {
+func (customerHandlers *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["customer_id"]
 	customer, err := customerHandlers.service.GetCustomer(id)
 	if err != nil {
-		w.WriteHeader(err.Code)
-		fmt.Fprintf(w, err.Message)
+		writeResponse(w, err.Code, err.AsMessage())
 	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customer)
+		writeResponse(w, http.StatusOK, customer)
 	}
 }
 
@@ -56,7 +46,10 @@ func createCustomer(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "post request received")
 }
 
-func greetCustomer(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	fmt.Fprint(w, vars["customer_id"])
+func writeResponse(w http.ResponseWriter, code int, data interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		panic(err)
+	}
 }

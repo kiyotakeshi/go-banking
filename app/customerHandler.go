@@ -3,7 +3,6 @@ package app
 import (
 	"banking/service"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -20,14 +19,12 @@ type CustomerHandlers struct {
 }
 
 func (customerHandlers *CustomerHandlers) getCustomers(w http.ResponseWriter, r *http.Request) {
-	customers, _ := customerHandlers.service.GetAllCustomer()
+	customers, err := customerHandlers.service.GetAllCustomer()
 
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
+	if err != nil {
+		writeResponse(w, err.Code, err.AsMessage())
 	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customers)
+		writeResponse(w, http.StatusOK, customers)
 	}
 }
 

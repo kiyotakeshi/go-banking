@@ -1,16 +1,18 @@
 package domain
 
+import "banking/errs"
+
 // CustomerRepositoryStub Mock adapter
 type CustomerRepositoryStub struct {
 	customers []Customer
 	customer  Customer
 }
 
-func (s CustomerRepositoryStub) FindAll() ([]Customer, error) {
+func (s CustomerRepositoryStub) FindAll() ([]Customer, *errs.ApplicationError) {
 	return s.customers, nil
 }
 
-func (s CustomerRepositoryStub) FindById(id string) (*Customer, error) {
+func (s CustomerRepositoryStub) FindById(id string) (*Customer, *errs.ApplicationError) {
 	return &s.customer, nil
 }
 

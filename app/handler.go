@@ -39,6 +39,19 @@ func (customerHandlers *CustomerHandlers) greetCustomers(w http.ResponseWriter, 
 	}
 }
 
+func (customerHandlers *CustomerHandlers) greetCustomer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["customer_id"]
+	customer, err := customerHandlers.service.GetCustomer(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, err.Error())
+	} else {
+		w.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(customer)
+	}
+}
+
 func createCustomer(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "post request received")
 }

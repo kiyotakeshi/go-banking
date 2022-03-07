@@ -8,7 +8,7 @@ type CustomerRepositoryStub struct {
 	customer  Customer
 }
 
-func (s CustomerRepositoryStub) FindAll() ([]Customer, *errs.ApplicationError) {
+func (s CustomerRepositoryStub) FindAll(status string) ([]Customer, *errs.ApplicationError) {
 	return s.customers, nil
 }
 

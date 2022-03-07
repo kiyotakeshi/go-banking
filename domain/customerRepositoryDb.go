@@ -2,6 +2,7 @@ package domain
 
 import (
 	"banking/errs"
+	"banking/logger"
 	"database/sql"
 	"log"
 
@@ -25,7 +26,7 @@ func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.Applicat
 		rows, err = d.client.Query(findAllSql, status)
 	}
 	if err != nil {
-		log.Println("Error occurred while query to customer table " + err.Error())
+		logger.Error("Error occurred while query to customer table " + err.Error())
 		return nil, errs.NewUnexpectedError("unexpected database error")
 	}
 
@@ -34,7 +35,7 @@ func (d CustomerRepositoryDb) FindAll(status string) ([]Customer, *errs.Applicat
 		var c Customer
 		err := rows.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
 		if err != nil {
-			log.Println("Error occurred while scan customers " + err.Error())
+			logger.Error("Error occurred while scan customers " + err.Error())
 			return nil, errs.NewUnexpectedError("unexpected database error")
 		}
 		customers = append(customers, c)

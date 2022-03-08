@@ -3,7 +3,6 @@ package app
 import (
 	"banking/service"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -38,10 +37,6 @@ func (customerHandlers *CustomerHandlers) getCustomer(w http.ResponseWriter, r *
 	} else {
 		writeResponse(w, http.StatusOK, customer)
 	}
-}
-
-func createCustomer(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "post request received")
 }
 
 func writeResponse(w http.ResponseWriter, code int, data interface{}) {

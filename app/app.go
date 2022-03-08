@@ -18,15 +18,18 @@ func Start() {
 	router := mux.NewRouter()
 
 	dbClient := getDbClient()
+
 	// customerHandlers := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
 	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
-	// accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
 	customerHandlers := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
+
+	accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
+	accountHandler := AccountHandler{service.NewAccountService(accountRepositoryDb)}
 
 	// define routes
 	router.HandleFunc("/customers", customerHandlers.getCustomers).Methods(http.MethodGet)
-	router.HandleFunc("/customers", createCustomer).Methods(http.MethodPost)
 	router.HandleFunc("/customers/{customer_id:[0-9]+}", customerHandlers.getCustomer).Methods(http.MethodGet)
+	router.HandleFunc("/customers/{customer_id:[0-9]+}/account", accountHandler.NewAccount).Methods(http.MethodPost)
 
 	address := os.Getenv("SERVER_ADDRESS")
 	port := os.Getenv("SERVER_PORT")

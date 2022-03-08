@@ -5,9 +5,11 @@ import (
 	"banking/service"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func Start() {
@@ -15,8 +17,11 @@ func Start() {
 
 	router := mux.NewRouter()
 
+	dbClient := getDbClient()
 	// customerHandlers := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryStub())}
-	customerHandlers := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryDb())}
+	customerRepositoryDb := domain.NewCustomerRepositoryDb(dbClient)
+	// accountRepositoryDb := domain.NewAccountRepositoryDb(dbClient)
+	customerHandlers := CustomerHandlers{service.NewCustomerService(customerRepositoryDb)}
 
 	// define routes
 	router.HandleFunc("/customers", customerHandlers.getCustomers).Methods(http.MethodGet)
@@ -33,4 +38,23 @@ func sanityCheck() {
 		os.Getenv("SERVER_PORT") == "" {
 		log.Fatal("environment variable not defined...")
 	}
+}
+
+func getDbClient() *sqlx.DB {
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbAddress := os.Getenv("DB_ADDRESS")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbAddress, dbPort, dbName)
+	client, err := sqlx.Open("mysql", dataSource)
+	if err != nil {
+		panic(err)
+	}
+	// See "Important settings" section.
+	client.SetConnMaxLifetime(time.Minute * 3)
+	client.SetMaxOpenConns(10)
+	client.SetMaxIdleConns(10)
+
+	return client
 }

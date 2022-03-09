@@ -11,21 +11,33 @@ import (
 	"testing"
 )
 
+var router *mux.Router
+var customerHandler CustomerHandlers
+var mockService *mock_service.MockCustomerService
+
+func setup(t *testing.T) func() {
+	controller := gomock.NewController(t)
+	mockService = mock_service.NewMockCustomerService(controller)
+	customerHandler = CustomerHandlers{mockService}
+	router = mux.NewRouter()
+	router.HandleFunc("/customers", customerHandler.getCustomers)
+
+	return func() {
+		router = nil
+		defer controller.Finish()
+	}
+}
+
 func Test_should_return_customers_with_status_code_200(t *testing.T) {
 	// arrange
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-	mockService := mock_service.NewMockCustomerService(controller)
+	tearDown := setup(t)
+	defer tearDown()
+
 	dummyCustomers := []dto.CustomerResponse{
 		{"100", "mike", "tokyo", "001001", "1998-01-01", "1"},
 		{"101", "popcorn", "osaka", "001002", "1988-11-01", "1"},
 	}
 	mockService.EXPECT().GetAllCustomer("").Return(dummyCustomers, nil)
-	customerHandler := CustomerHandlers{mockService}
-
-	router := mux.NewRouter()
-	router.HandleFunc("/customers", customerHandler.getCustomers)
-
 	request, _ := http.NewRequest(http.MethodGet, "/customers", nil)
 
 	// act
@@ -40,15 +52,10 @@ func Test_should_return_customers_with_status_code_200(t *testing.T) {
 
 func Test_should_return_status_code_500_with_error_message(t *testing.T) {
 	// arrange
-	controller := gomock.NewController(t)
-	defer controller.Finish()
-	mockService := mock_service.NewMockCustomerService(controller)
+	tearDown := setup(t)
+	defer tearDown()
+
 	mockService.EXPECT().GetAllCustomer("").Return(nil, errs.NewUnexpectedError("merror"))
-	customerHandler := CustomerHandlers{mockService}
-
-	router := mux.NewRouter()
-	router.HandleFunc("/customers", customerHandler.getCustomers)
-
 	request, _ := http.NewRequest(http.MethodGet, "/customers", nil)
 
 	// act

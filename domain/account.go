@@ -3,6 +3,7 @@ package domain
 import (
 	"banking/dto"
 	"banking/errs"
+	"time"
 )
 
 type Account struct {
@@ -14,8 +15,8 @@ type Account struct {
 	Status      string  `db:"status"`
 }
 
-func (account Account) ToNewAccountResponseDto() dto.NewAccountResponse {
-	return dto.NewAccountResponse{AccountId: account.AccountId}
+func (account Account) ToNewAccountResponseDto() *dto.NewAccountResponse {
+	return &dto.NewAccountResponse{AccountId: account.AccountId}
 }
 
 func (account Account) CanWithdraw(amount float64) bool {
@@ -25,8 +26,20 @@ func (account Account) CanWithdraw(amount float64) bool {
 	return true
 }
 
+// go generate ./...
+//go:generate mockgen -source=$GOFILE -destination=../mocks/$GOPACKAGE/mock_$GOFILE
 type AccountRepository interface {
 	Save(Account) (*Account, *errs.ApplicationError)
 	FindById(accountId string) (*Account, *errs.ApplicationError)
 	SaveTransaction(transaction Transaction) (*Transaction, *errs.ApplicationError)
+}
+
+func NewAccount(customerId string, accountType string, amount float64) Account {
+	return Account{
+		CustomerId:  customerId,
+		OpeningDate: time.Now().Format("2006-01-02 15:04:05"),
+		AccountType: accountType,
+		Amount:      amount,
+		Status:      "1",
+	}
 }

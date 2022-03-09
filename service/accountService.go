@@ -22,28 +22,16 @@ func (s DefaultAccountService) NewAccount(request dto.NewAccountRequest) (*dto.N
 		return nil, err
 	}
 
-	account := domain.Account{
-		AccountId:   "",
-		CustomerId:  request.CustomerId,
-		OpeningDate: time.Now().Format("2006-01-02 15:04:05"),
-		AccountType: request.AccountType,
-		Amount:      request.Amount,
-		Status:      "1",
-	}
-
+	account := domain.NewAccount(request.CustomerId, request.AccountType, request.Amount)
 	newAccount, err := s.repository.Save(account)
 	if err != nil {
 		return nil, err
 	}
-
-	response := newAccount.ToNewAccountResponseDto()
-
-	return &response, nil
+	return newAccount.ToNewAccountResponseDto(), nil
 }
 
 func (s DefaultAccountService) MakeTransaction(request dto.TransactionRequest) (*dto.TransactionResponse, *errs.ApplicationError) {
-	err := request.Validate()
-	if err != nil {
+	if err := request.Validate(); err != nil {
 		return nil, err
 	}
 
